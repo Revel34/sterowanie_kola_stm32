@@ -1,0 +1,2 @@
+../Core/Src/BLDC_MOTOR.c:10:6:IncrementalEncoder_readVelocity	24	static
+../Core/Src/BLDC_MOTOR.c:29:6:ReadVelocityFromPGPin_Hall	48	static

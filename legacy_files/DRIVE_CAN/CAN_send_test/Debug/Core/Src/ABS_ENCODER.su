@@ -1,0 +1,4 @@
+../Core/Src/ABS_ENCODER.c:20:27:SPI_ReadSSI	32	static
+../Core/Src/ABS_ENCODER.c:43:15:ConvertToAngle	16	static
+../Core/Src/ABS_ENCODER.c:48:8:AbsoluteEncoder_readAngle	24	static
+../Core/Src/ABS_ENCODER.c:67:8:AbsoluteEncoder_getContinuousAngle	16	static

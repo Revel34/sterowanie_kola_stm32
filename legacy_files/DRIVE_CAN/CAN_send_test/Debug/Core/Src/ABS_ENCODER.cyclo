@@ -1,0 +1,4 @@
+../Core/Src/ABS_ENCODER.c:20:27:SPI_ReadSSI	2
+../Core/Src/ABS_ENCODER.c:43:15:ConvertToAngle	1
+../Core/Src/ABS_ENCODER.c:48:8:AbsoluteEncoder_readAngle	2
+../Core/Src/ABS_ENCODER.c:67:8:AbsoluteEncoder_getContinuousAngle	3

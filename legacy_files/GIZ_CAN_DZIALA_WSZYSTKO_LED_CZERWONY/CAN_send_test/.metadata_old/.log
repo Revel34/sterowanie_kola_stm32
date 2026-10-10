@@ -1,0 +1,38 @@
+!SESSION 2026-07-05 17:35:16.871 -----------------------------------------------
+eclipse.buildId=Version 1.19.0
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2026-07-05 17:35:25.789
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2026-07-05 17:35:25.790
+!MESSAGE Log4j2 initialized with config file /mnt/nowy/STM32CubeIDE/workspace_1.19.0/CAN_send_test/.metadata/.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2026-07-05 17:35:28.528
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 4 1002 2026-07-05 17:36:46.697
+!MESSAGE HTTP Server 'Internal Error': https://download.eclipse.org/tools/cdt/releases/latest/compositeContent.xml
+!STACK 1
+org.eclipse.ecf.filetransfer.BrowseFileTransferException: HttpComponents connection error response code 500.
+	at org.eclipse.ecf.provider.filetransfer.httpclientjava.HttpClientFileSystemBrowser.runRequest(HttpClientFileSystemBrowser.java:295)
+	at org.eclipse.ecf.provider.filetransfer.browse.AbstractFileSystemBrowser$DirectoryJob.run(AbstractFileSystemBrowser.java:71)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SUBENTRY 1 org.eclipse.ecf.identity 4 0 2026-07-05 17:36:46.698
+!MESSAGE HttpComponents connection error response code 500.
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 4 1002 2026-07-05 17:36:47.310
+!MESSAGE HTTP Server 'Internal Error': https://download.eclipse.org/releases/2024-09/compositeContent.xml
+!STACK 1
+org.eclipse.ecf.filetransfer.BrowseFileTransferException: HttpComponents connection error response code 500.
+	at org.eclipse.ecf.provider.filetransfer.httpclientjava.HttpClientFileSystemBrowser.runRequest(HttpClientFileSystemBrowser.java:295)
+	at org.eclipse.ecf.provider.filetransfer.browse.AbstractFileSystemBrowser$DirectoryJob.run(AbstractFileSystemBrowser.java:71)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SUBENTRY 1 org.eclipse.ecf.identity 4 0 2026-07-05 17:36:47.311
+!MESSAGE HttpComponents connection error response code 500.
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-07-05 17:38:57.563
+!MESSAGE Indexed 'Projekt_glowny' (41 sources, 346 headers) in 5.66 sec: 22,223 declarations; 91,515 references; 1 unresolved inclusions; 202 syntax errors; 241 unresolved names (0.21%)

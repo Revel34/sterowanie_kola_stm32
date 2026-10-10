@@ -1,0 +1,3 @@
+../Core/Src/MyStruct.c:10:6:TurnOn	1
+../Core/Src/MyStruct.c:16:6:TurnOff	1
+../Core/Src/MyStruct.c:22:6:Continius_ON_OFF	2

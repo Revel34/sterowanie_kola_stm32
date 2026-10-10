@@ -1,0 +1,12 @@
+../Core/Src/ALL_STRUCT.c:12:6:ReadNewCmdVel	64	static
+../Core/Src/ALL_STRUCT.c:123:6:ReadExtraParametres	16	static
+../Core/Src/ALL_STRUCT.c:131:6:AngleLimit	24	static
+../Core/Src/ALL_STRUCT.c:150:7:VelocityLimit	16	static
+../Core/Src/ALL_STRUCT.c:157:6:GenerateVelTab	16	static
+../Core/Src/ALL_STRUCT.c:192:6:SpeedRamp	24	static
+../Core/Src/ALL_STRUCT.c:223:6:PID	32	static
+../Core/Src/ALL_STRUCT.c:306:7:NormalizeAngle	16	static
+../Core/Src/ALL_STRUCT.c:315:5:StepperMotor	24	static
+../Core/Src/ALL_STRUCT.c:395:6:SetSteps	16	static
+../Core/Src/ALL_STRUCT.c:423:6:ReadVelocityFromPGPin	40	static
+../Core/Src/ALL_STRUCT.c:454:7:Odczytaj_Kat_Enkodera	16	static
