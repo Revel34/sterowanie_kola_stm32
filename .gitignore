@@ -1,0 +1,9 @@
+# Reference material kept locally only
+docs/
+legacy_files/
+
+# Build outputs
+Debug/
+Release/
+**/tests/build/
+*.o
