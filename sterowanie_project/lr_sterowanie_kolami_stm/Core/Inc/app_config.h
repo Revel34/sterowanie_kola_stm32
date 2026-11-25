@@ -28,12 +28,12 @@
 #define WHEEL_IS_RIGHT_SIDE         { 1, 1, 0, 0 }
 #define WHEEL_DIR_FLIP              { -1.0f, -1.0f, 1.0f, 1.0f }
 
-/* Mechanics (Rover 3.0 legacy values) ---------------------------------------*/
-#define GEAR_RATIO                  19.0f   /* PLACEHOLDER - REPLACE */
-#define ENC_COUNTS_PER_MOTOR_REV    28.0f   /* PLACEHOLDER - REPLACE */
-#define WHEEL_DIAMETER_M            0.26f   /* PLACEHOLDER - REPLACE */
-#define ROVER_WIDTH_M               0.713f  /* PLACEHOLDER - REPLACE */
-/* Rover length 0.789 m (PLACEHOLDER) is not used by fixed-wheel kinematics. */
+/* Mechanics (small rover) ---------------------------------------------------*/
+#define GEAR_RATIO                  19.0f   /* motor turns per wheel turn */
+/* Counts per motor turn as seen by the timer (TI12 mode = 4 x PPR). */
+#define ENC_COUNTS_PER_MOTOR_REV    28.0f
+#define WHEEL_DIAMETER_M            0.191f  /* tyre diameter, CAD */
+#define ROVER_WIDTH_M               0.420f  /* left-right wheel track, CAD / controllers.yaml */
 
 /* Encoder count sign per motor (+1: count up = positive wheel rotation). */
 #define ENCODER_SIGN                { 1, 1, 1, 1 }      /* UNKNOWN - REQUIRES CONFIRMATION */
@@ -46,7 +46,8 @@
 /* Motor output --------------------------------------------------------------*/
 /* Controller signal that maps to 100 % TIM1 duty (legacy PWM scale). */
 #define MOTOR_SIGNAL_FULL_SCALE     1000.0f
-/* Open loop: signal = setpoint [m/s] x gain, clamped to full scale. */
+/* Open loop: signal = setpoint [m/s] x gain, clamped to full scale.
+ * Tuned for the old 0.26 m wheel; recalibrate on the small rover. */
 #define OPEN_LOOP_GAIN              330.0f  /* PLACEHOLDER - REPLACE */
 
 /* GPIO level (0/1) that enables an H-bridge. Active-high keeps the bridges

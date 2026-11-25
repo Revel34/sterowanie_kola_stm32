@@ -60,7 +60,7 @@ All of this is set in the CubeMX project (`lr_sterowanie_kolami_stm.ioc`).
 
 | Function | Peripheral / pins | Notes |
 |---|---|---|
-| CAN-FD | FDCAN1, RX = PB8, TX = PB9 | 1 Mbit/s nominal, 2 Mbit/s data, BRS on |
+| CAN-FD | FDCAN1, RX = PB8, TX = PB9 | 1 Mbit/s nominal, 1 Mbit/s data (same as MAB PDS and ROS 2), BRS off, auto-retransmission on |
 | Motor PWM | TIM1 CH1–CH4 = PC0–PC3 | 20 kHz |
 | Motor direction | `M1_DIR`–`M4_DIR` = PC6–PC9 | GPIO |
 | H-bridge enable | `M1_EN`–`M4_EN` = PC10–PC13 | GPIO, low at boot |
@@ -92,8 +92,11 @@ spin the **opposite** way to the left motors. The firmware handles this for you
 ## 4. The CAN-FD protocol
 
 - 11-bit standard IDs, **little-endian** (lowest byte first), 8 data bytes.
-- Frames are CAN-FD with bit-rate switching. Classic CAN frames with the right ID
-  are also accepted.
+- The bus runs at **1 Mbit/s nominal and 1 Mbit/s data**, like the MAB PDS and ROS 2.
+  The board sends CAN-FD frames **without** bit-rate switching (BRS off). It also
+  accepts classic CAN frames and CAN-FD frames with or without BRS.
+- Auto-retransmission is on: a frame that loses arbitration or gets no ACK is sent
+  again by the hardware.
 - Every ID except the command ID is rejected by the hardware filter.
 
 ### 4.1 Command: PC → board, ID `0x100`
@@ -132,10 +135,11 @@ ang_z = 0    → 0    → 00 00
 ID 0x100, data: F4 01 00 00 E8 03 00 00
 ```
 
-With a Linux SocketCAN adapter that supports CAN-FD (the `1` after `##` turns on BRS):
+With a Linux SocketCAN adapter that supports CAN-FD (the `0` after `##` means no BRS):
 
 ```bash
-cansend can0 100##1F4010000E8030000
+sudo ip link set can0 up type can bitrate 1000000 dbitrate 1000000 fd on
+cansend can0 100##0F4010000E8030000
 ```
 
 ### 4.2 Feedback: board → PC, IDs `0x101`–`0x104`
@@ -243,8 +247,7 @@ The controller works on a scale of −1000 … +1000, where 1000 means 100 % PWM
 - Every 100 ms the firmware reads how many counts each encoder moved.
 - The counters wrap around (16-bit ones every 65 536 counts). The maths handles
   this, so wrap-around never causes a jump.
-- Counts per wheel turn = counts per motor turn (28) × gear ratio (19) = 532
-  (both are placeholders).
+- Counts per wheel turn = counts per motor turn (28) × gear ratio (19) = 532.
 - Position is stored in a 64-bit counter, so it never overflows inside the board.
 
 ---
@@ -294,16 +297,16 @@ Two markers show what still needs work:
 | Setting | Current | What it is |
 |---|---|---|
 | `GEAR_RATIO` | 19 | motor turns per wheel turn |
-| `ENC_COUNTS_PER_MOTOR_REV` | 28 | encoder counts per motor turn, as counted by the timer |
-| `WHEEL_DIAMETER_M` | 0.26 | wheel diameter in metres |
-| `ROVER_WIDTH_M` | 0.713 | distance between left and right wheels in metres |
+| `ENC_COUNTS_PER_MOTOR_REV` | 28 | encoder counts per motor turn, as counted by the timer (TI12 mode = 4 × PPR) |
+| `WHEEL_DIAMETER_M` | 0.191 | tyre diameter in metres (CAD) |
+| `ROVER_WIDTH_M` | 0.420 | distance between left and right wheels in metres (CAD, `controllers.yaml`) |
 
 ### Control
 
 | Setting | Current | What it is |
 |---|---|---|
 | `CMD_TIMEOUT_MS` | 2500 | stop if no valid command for this long |
-| `OPEN_LOOP_GAIN` | 330 | open loop: PWM units per m/s |
+| `OPEN_LOOP_GAIN` | 330 | open loop: PWM units per m/s (set for the old 0.26 m wheel; **recalibrate**) |
 | `PI_KP`, `PI_KI`, `PI_KD` | 32.629, 995.281, 0 | PI gains (tuned for an old BLDC motor; **must be re-tuned**) |
 | `PI_INTEGRAL_LIMIT` | 1 | integral clamp |
 | `PI_OUTPUT_LIMIT` | 1000 | max controller output (1000 = 100 % PWM) |
@@ -364,13 +367,19 @@ You need `gcc` and `make`. The output ends with `N checks, 0 failures`.
 Do these in order. Keep the **wheels off the ground** until step 6.
 
 1. **BOOT0 pin.** PB8 is both BOOT0 and CAN RX. The CAN transceiver holds RX high,
-   so the chip may start its built-in bootloader instead of this firmware. Check
-   the option bytes (nSWBOOT0 = 0, nBOOT0 = 1) or confirm the hardware prevents it.
+   so the chip may start its built-in bootloader instead of this firmware. Set the
+   option bytes so PB8 is ignored at reset: nSWBOOT0 = 0 (unticked), nBOOT0 = 1
+   (ticked) in STM32CubeProgrammer → Option bytes → User Configuration, or:
+
+   ```bash
+   STM32_Programmer_CLI -c port=SWD -ob nSWBOOT0=0 nBOOT0=1
+   ```
 2. **Motor power off.** Flash the board. With a scope or multimeter, check that
    EN pins are inactive and PWM pins are at 0.
 3. **CAN.** Connect the bus. You should see `0x101`–`0x104` every 100 ms.
    (At least one other node must be on the bus to acknowledge the frames.)
-4. **Motor power on, open loop.** Send mode 0 with a small `lin_x` (for example
+4. **Motor power on, open loop.** Send mode 0 (the default from ROS 2 until
+   directions are confirmed) with a small `lin_x` (for example
    0.2 m/s) several times per second. Every wheel should turn in the **rover's
    forward** direction. If one turns the wrong way, check the motor wiring or
    `MOTOR_DIR_POSITIVE_LEVEL`.
@@ -379,8 +388,10 @@ Do these in order. Keep the **wheels off the ground** until step 6.
    wheels when driving forward. If one is wrong, flip that motor's `ENCODER_SIGN`.
    **Do not use PID mode until this is right**: a wrong sign makes the motor run away.
 6. **Timeout.** Stop sending commands. The motors must stop after about 2.5 s.
-7. **PID.** Switch to mode 1 and tune `PI_KP` / `PI_KI` on the real motors.
-8. Fill in the real mechanical values (gear ratio, counts, wheel size, width).
+7. **Open-loop gain.** Check that a commanded `lin_x` gives roughly that speed and
+   adjust `OPEN_LOOP_GAIN` (it was set for the old, larger wheel).
+8. **PID.** Only after steps 4–5 pass: switch to mode 1 and tune `PI_KP` / `PI_KI`
+   on the real motors.
 
 ---
 
@@ -412,7 +423,7 @@ path is known). Use **Live Expressions** in the CubeIDE debugger instead:
 | Wheel runs away in PID mode | `ENCODER_SIGN` or DIR wrong for that motor. |
 | Board keeps resetting | Watchdog: CAN can't recover from bus-off (wiring, termination, bit rate). |
 | No feedback on the bus | No other node is acknowledging, or wrong bit rate on the other side. |
-| Speed readings are "steppy" | Normal at low speed: one encoder count per 100 ms ≈ 0.12 rad/s with the current placeholders. |
+| Speed readings are "steppy" | Normal at low speed: one encoder count per 100 ms ≈ 0.12 rad/s (532 counts per wheel turn). |
 
 ---
 
@@ -444,12 +455,13 @@ unit-tested. **HAL** modules touch the hardware.
 ## 12. Known limitations
 
 - **Not tested on hardware.**
-- Mechanical values, PI gains and CAN IDs are placeholders.
+- PI gains, `OPEN_LOOP_GAIN` and CAN IDs are placeholders.
 - H-bridge EN/DIR polarity and encoder direction are not confirmed.
 - No status/error frame is sent to the PC; errors are only visible in the debugger.
 - No speed ramp: speed changes are applied immediately.
 - No encoder fault detection (for example, an unplugged encoder in PID mode).
-- CubeMX has AutoRetransmission **off**: a feedback frame that loses bus
-  arbitration is not resent. The next one comes 100 ms later.
+- AutoRetransmission is **on**. If no other node is on the bus to ACK, the same
+  frames are resent forever, the TX FIFO stays full and `stats.feedback_dropped`
+  grows. This is expected and stops as soon as another node joins.
 - The control loop runs at 10 Hz (100 ms), as in the old code. That is slow for
   fine speed control; it can be changed later with `CONTROL_TICKS_PER_STEP`.

@@ -87,7 +87,7 @@ bool drv_can_send(const can_frame_t *frame)
   tx.TxFrameType = FDCAN_DATA_FRAME;
   tx.DataLength = can_len_to_dlc(frame->len);  /* HAL G4: DataLength is the DLC code */
   tx.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-  tx.BitRateSwitch = FDCAN_BRS_ON;
+  tx.BitRateSwitch = FDCAN_BRS_OFF;   /* bus runs 1 Mbit/s nominal and data */
   tx.FDFormat = FDCAN_FD_CAN;
   tx.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
   tx.MessageMarker = 0U;
